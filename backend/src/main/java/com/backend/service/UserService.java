@@ -1,17 +1,23 @@
 package com.backend.service;
 
 import com.amazonaws.services.kms.model.AlreadyExistsException;
+import com.backend.exception.DoesntExist;
+import com.backend.exception.MissingParameter;
 import com.backend.model.User;
 import com.backend.repository.SecretRepository;
 import com.backend.repository.UserRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jackson.JsonObjectDeserializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.rmi.ServerError;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -22,22 +28,27 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User inscription(final User user)  {
+    public User inscription(final User user) throws ServerError, MissingParameter {
         // TODO
-        // Verification de la présence du email et du mdp
         // Verification de la validite de l'adresse courriel
         // Setup la vérification avec l'api de pwned –Nice to have–
 
-        // verify that the email address that was given has no uppercase characters
+        if (user.getId().isEmpty() || user.getPassword().isEmpty()) {
+            throw new MissingParameter("Missing at least a parameter for the given user");
+        }
+
+        // Verify that the email address that was given has no uppercase characters
         user.setId(user.getId().toLowerCase(Locale.ROOT));
 
-        //hash the password with the id
-        hashPassword(user);
+        // Hash the password with the id
+        user.setPassword(hashPassword(user.getPassword(), user.getId()));
 
-        //verify that there isn't already an other user with the same email address
+        // Verify that there isn't already an other user with the same email address
+        // TODO : ask why do i explode an exception simply if i put an adress i already put in, would'nt that break my application
         Optional<User> existingUser = userRepository.findById(user.getId());
         if (existingUser.isPresent()) {
-            throw new AlreadyExistsException("Already exist");
+//            throw new AlreadyExistsException("User already exist");
+            System.out.println("User already exists");
         }
 
         User createdUser = userRepository.save(user);
@@ -45,25 +56,48 @@ public class UserService {
         return createdUser;
     }
 
-    public void modifyUserPassword(User user, String password) {
-        Optional<User> modifiedUser = userRepository.findById(user.getId());
-        modifiedUser.get().setPassword(password);
-        hashPassword(modifiedUser.get());
+    public User connexion(String id, String password) throws DoesntExist, ServerError {
+        // Verify that there's already a user with the same email address
+        Optional<User> existingUser = userRepository.findById(id);
+        if (!existingUser.isPresent()) {
+//            throw new DoesntExist("User does not exist");
+            System.out.println("User does not exist");
+        }
+
+        // Verify that the passwords match
+        String encodedPassword = hashPassword(password, id);
+        if (existingUser.get().getPassword().equals(encodedPassword)) {
+
+        }
+
+        return null;
+    }
+
+    public void modifyUserPassword(String id, String password) throws ServerError {
+        Optional<User> modifiedUser = userRepository.findById(id);
+        modifiedUser.get().setPassword(hashPassword(modifiedUser.get().getPassword(), modifiedUser.get().getId()));
+
         userRepository.save(modifiedUser.get());
     }
 
-    public void hashPassword(User user) {
+    public String hashPassword(String stringToHash, String salt) throws ServerError {
         final MessageDigest digest;
         try {
-            String idPassword = user.getId() + user.getPassword();
+            String idPassword = stringToHash + salt;
             digest = MessageDigest.getInstance("SHA3-256");
             final byte[] hashbytes = digest.digest(
                     idPassword.getBytes(StandardCharsets.UTF_8)
             );
+
             String hashedPassword = bytesToHex(hashbytes);
-            user.setPassword(hashedPassword);
+
+//            byte[] decodedBytes = Base64.getDecoder().decode(hashbytes);
+//            String hashedPassword = new String(decodedBytes);
+
+            return hashedPassword;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+            throw new ServerError("Connot process password", null);
         }
     }
 

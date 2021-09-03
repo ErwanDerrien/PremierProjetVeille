@@ -28,7 +28,10 @@ public class BackendApplication implements CommandLineRunner {
         newUser.setPassword("test");
         userService.inscription(newUser);
         System.out.println("mdp avant : " + userRepository.findById("erwan1derrien@gmail.com").get().getPassword());
-        userService.modifyUserPassword(newUser, "deuxieme test");
+        userService.modifyUserPassword(newUser.getId(), "deuxieme test");
         System.out.println("mdp apres : " + userRepository.findById("erwan1derrien@gmail.com").get().getPassword());
+
+        System.out.println("apres inscription");
+
     }
 }

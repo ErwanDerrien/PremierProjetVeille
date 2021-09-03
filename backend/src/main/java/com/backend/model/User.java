@@ -11,7 +11,7 @@ public class User {
 
     public User() {}
 
-    public User(String password) {
+    public User(String id, String password) {
         this.password = password;
     }
 
