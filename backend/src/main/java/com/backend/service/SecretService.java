@@ -2,10 +2,7 @@ package com.backend.service;
 
 import com.backend.exception.ForbiddenAccess;
 import com.backend.model.Secret;
-import com.backend.model.User;
 import com.backend.repository.SecretRepository;
-import com.backend.repository.UserRepository;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -18,7 +15,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
-import java.util.Optional;
 
 import static com.backend.service.utils.Security.*;
 
@@ -32,8 +28,6 @@ public class SecretService {
 
     private static String secretPassword = null;
     private static String aesAlgorithm = null;
-
-//    TODO : fractionner les fonctions
 
     private String getSecretPassword() {
         if(secretPassword == null) {
@@ -49,13 +43,13 @@ public class SecretService {
         return aesAlgorithm;
     }
 
-    public Secret create(String userId, Secret newSecret) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String create(String userId, Secret newSecret) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
 
         return create(userId,newSecret, getAESAlgorithm(), getSecretPassword());
 
     }
 
-    public Secret create(String userId, Secret newSecret, String aesAlgorithm, String secretPassword) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String create(String userId, Secret newSecret, String aesAlgorithm, String secretPassword) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
 
 //        Make sure the given userId matches the userId form the JWT token
         newSecret.setUserId(userId);
@@ -70,7 +64,7 @@ public class SecretService {
 
         secretRepository.save(newSecret);
 
-        return newSecret;
+        return newSecret.getId();
     }
 
     public List<Secret> getAllEncryptedUsersSecretList(String userId) {
@@ -116,12 +110,12 @@ public class SecretService {
         return encrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }
 
-    public Secret get(String userId, String secretId, boolean decrupt) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
+    public Secret get(String userId, String secretId, boolean decrypt) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
         // Get secret
         Secret secret = getSecretFromDb(userId,secretId);
 
         // Optional desryption
-        if(decrupt) {
+        if(decrypt) {
             secret.setContent(
                     decryptContent(secret.getContent(), getAESAlgorithm(), getSecretPassword(), secret.getUserId(), secret.getInitializatonVector())
             );
@@ -153,7 +147,7 @@ public class SecretService {
         return secret;
     }
 
-    public void deleteSecret(String userId, String id) throws ForbiddenAccess {
+    public void delete(String userId, String id) throws ForbiddenAccess {
         // Get secret
         Secret secret = getSecretFromDb(userId, id);
         if (secret.getUserId() != userId) {

@@ -23,7 +23,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User create(final User user) throws ServerError, MissingParameter {
+    public String create(final User user) throws ServerError, MissingParameter {
         // TODO
         // Verification de la validite de l'adresse courriel
         // Setup la vérification avec l'api de pwned –Nice to have–
@@ -50,10 +50,10 @@ public class UserService {
 
         User createdUser = userRepository.save(user);
 
-        return createdUser;
+        return createdUser.getId();
     }
 
-    public User connexion(String id, String password) throws DoesntExist, ServerError, AuthenticationException {
+    public User login(String id, String password) throws DoesntExist, ServerError, AuthenticationException {
 
         // Verify that the email address that was given has no uppercase characters
         id = id.toLowerCase(Locale.ROOT);
@@ -84,7 +84,12 @@ public class UserService {
         }
     }
 
-    public void deleteUser(String userId) {
+    public void delete(String userId) {
         userRepository.deleteById(userId);
+//        TODO : expire JWT token because user does not exist anymore
+    }
+
+    public User get(String userId) {
+        return userRepository.findById(userId).get();
     }
 }
