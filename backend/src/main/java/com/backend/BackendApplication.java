@@ -24,14 +24,8 @@ public class BackendApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         User newUser = new User();
-        newUser.setId("erwan1derrien@gmail.com");
+        newUser.setId("John doe");
         newUser.setPassword("test");
-        userService.inscription(newUser);
-        System.out.println("mdp avant : " + userRepository.findById("erwan1derrien@gmail.com").get().getPassword());
-        userService.modifyUserPassword(newUser.getId(), "deuxieme test");
-        System.out.println("mdp apres : " + userRepository.findById("erwan1derrien@gmail.com").get().getPassword());
-
-        System.out.println("apres inscription");
-
+        userService.create(newUser);
     }
 }
