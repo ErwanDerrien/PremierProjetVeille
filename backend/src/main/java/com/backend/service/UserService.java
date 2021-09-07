@@ -76,22 +76,15 @@ public class UserService {
         return existingUser.get();
     }
 
-    public boolean modifyUserPassword(String id, String password) throws ServerError {
+    public void modifyUserPassword(String id, String password) throws ServerError {
         Optional<User> modifiedUser = userRepository.findById(id);
-        modifiedUser.get().setPassword(hashPassword(modifiedUser.get().getPassword(), modifiedUser.get().getId()));
-
-        userRepository.save(modifiedUser.get());
-
-        return true;
+        if (modifiedUser.isPresent()) {
+            modifiedUser.get().setPassword(hashPassword(password, id));
+            userRepository.save(modifiedUser.get());
+        }
     }
 
-    public boolean deleteUser(String userId) {
+    public void deleteUser(String userId) {
         userRepository.deleteById(userId);
-
-        if (userRepository.findById(userId).isEmpty()) {
-            return true;
-        }
-
-        return false;
     }
 }
