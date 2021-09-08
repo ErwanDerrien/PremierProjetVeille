@@ -10,7 +10,7 @@ import java.util.Optional;
 @EnableScan
 public interface SecretRepository extends CrudRepository<Secret, String> {
 
-    public Optional<Secret> findById(String id);
+    public Optional<Secret> findByIdAndUserId(String id, String userId);
     public List<Secret> findByUserId(String userId);
     public void deleteById(String id);
 

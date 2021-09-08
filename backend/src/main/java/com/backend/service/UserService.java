@@ -23,10 +23,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public String create(final User user) throws ServerError, MissingParameter {
-        // TODO
-        // Verification de la validite de l'adresse courriel
-        // Setup la vérification avec l'api de pwned –Nice to have–
+    public String create(final User user) throws ServerError, MissingParameter, AlreadyExistsException {
+        // TODO : Verification de la validite de l'adresse courriel
+        // TODO : Setup la vérification avec l'api de pwned –Nice to have–
 
         if (user.getId().isEmpty() || user.getPassword().isEmpty()) {
             throw new MissingParameter("Missing at least a parameter for the given user");
@@ -53,7 +52,7 @@ public class UserService {
         return createdUser.getId();
     }
 
-    public User login(String id, String password) throws DoesntExist, ServerError, AuthenticationException {
+    public void login(String id, String password) throws DoesntExist, ServerError, AuthenticationException {
 
         // Verify that the email address that was given has no uppercase characters
         id = id.toLowerCase(Locale.ROOT);
@@ -72,24 +71,30 @@ public class UserService {
         if (!existingUser.get().getPassword().equals(encodedPassword)) {
             throw new AuthenticationException("Wrong credentials");
         }
-
-        return existingUser.get();
     }
 
-    public void modifyUserPassword(String id, String password) throws ServerError {
+    public void modifyUserPassword(String id, String password) throws ServerError, DoesntExist {
         Optional<User> modifiedUser = userRepository.findById(id);
-        if (modifiedUser.isPresent()) {
-            modifiedUser.get().setPassword(hashPassword(password, id));
-            userRepository.save(modifiedUser.get());
+        if (modifiedUser.isEmpty()) {
+            throw new DoesntExist("Given userId doesn't belong to any stored user");
         }
+        modifiedUser.get().setPassword(hashPassword(password, id));
+        userRepository.save(modifiedUser.get());
     }
 
-    public void delete(String userId) {
+    public void delete(String userId) throws DoesntExist {
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new DoesntExist("Given userId doesn't belong to any stored user");
+        }
         userRepository.deleteById(userId);
 //        TODO : expire JWT token because user does not exist anymore
+//        TODO : chain delete all secrets associated with the user (frontend or backend?)
     }
 
-    public User get(String userId) {
+    public User get(String userId) throws DoesntExist {
+        if (!userRepository.findById(userId).isPresent()) {
+            throw new DoesntExist("Given userId doesn't belong to any stored user");
+        }
         return userRepository.findById(userId).get();
     }
 }

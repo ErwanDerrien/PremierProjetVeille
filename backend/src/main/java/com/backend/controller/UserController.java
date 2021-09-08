@@ -1,5 +1,6 @@
 package com.backend.controller;
 
+import com.amazonaws.services.kms.model.AlreadyExistsException;
 import com.backend.exception.DoesntExist;
 import com.backend.exception.MissingParameter;
 import com.backend.model.User;
@@ -8,7 +9,10 @@ import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.rmi.ServerError;
@@ -21,52 +25,72 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public String create(@RequestBody User user, HttpServletResponse response) {
+    public ResponseEntity<String> create(@RequestBody User user, HttpServletResponse response, UriComponentsBuilder uriComponentsBuilder) {
         try {
-            return userService.create(user);
-        } catch (ServerError serverError) {
-            serverError.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        } catch (MissingParameter missingParameter) {
-            missingParameter.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            String userId = userService.create(user);
+
+            UriComponents uriComponent = uriComponentsBuilder.path("/api/v1/user/{id}").buildAndExpand(userId);
+
+            return ResponseEntity.status(201).location(
+                    uriComponent.toUri()
+            ).build();
+        } catch (ServerError | AlreadyExistsException | MissingParameter serverError) {
+            System.out.println("Unexpected error in UserController.create()");
+            return ResponseEntity.status(503).body(("Unexpected error"));
         }
-        return null;
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public User login(@RequestBody User user) {
+    @PostMapping(value = "/login")
+    public ResponseEntity<Void> login(@RequestBody User user) {
         try {
             userService.login(user.getId(), user.getPassword());
+            return ResponseEntity.status(200).build();
+        } catch (DoesntExist doesntExist) {
+            return ResponseEntity.status(404).build();
+        } catch (ServerError serverError) {
+            return ResponseEntity.status(503).build();
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PutMapping()
+    public ResponseEntity<Void> modifyUserPassword(@RequestBody User user, @RequestParam String userId) {
+        try {
+            userService.modifyUserPassword(userId, user.getPassword());
+            return ResponseEntity.status(200).build();
+
+        } catch (ServerError serverError) {
+            return ResponseEntity.status(503).build();
+        } catch (DoesntExist doesntExist) {
+            return ResponseEntity.status(404).build();
+        }
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<Void> delete(@RequestParam String userId) {
+        try {
+            userService.delete(userId);
+            return ResponseEntity.status(200).build();
+        } catch (DoesntExist doesntExist) {
+            return ResponseEntity.status(404).build();
+        }
+    }
+
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<User> get(@RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
+        try {
+            User user = userService.get(userId);
+
+            UriComponents uriComponent = uriComponentsBuilder.path("/api/v1/user/{id}").buildAndExpand(userId);
+
+            return ResponseEntity.status(200).location(
+                    uriComponent.toUri()
+            ).body(user);
         } catch (DoesntExist doesntExist) {
             doesntExist.printStackTrace();
-        } catch (ServerError serverError) {
-            serverError.printStackTrace();
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
+            return ResponseEntity.status(404).build();
         }
-        return null;
-    }
-
-    @RequestMapping(value = "/modifyUserPassword", method = RequestMethod.POST)
-    public boolean modifyUserPassword(@RequestBody User user) {
-        try {
-            userService.modifyUserPassword(user.getId(), user.getPassword());
-            return true;
-        } catch (ServerError serverError) {
-            serverError.printStackTrace();
-        }
-        return false;
-    }
-
-    @DeleteMapping(value = "/{userId}")
-    public void delete(@PathVariable("userId") String userId) {
-        userService.delete(userId);
-    }
-
-    @GetMapping(value = "/{userId}", produces = "application/json")
-    public User get(@PathVariable("userId") String userId) {
-        return userService.get(userId);
     }
 }
 
