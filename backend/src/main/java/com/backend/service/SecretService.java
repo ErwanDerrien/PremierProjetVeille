@@ -176,7 +176,6 @@ public class SecretService {
 
     public Secret update(String userId, Secret newSecret) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
         // Get secret
-        System.out.println("new secret : " + newSecret.toString());
         Secret secret = getSecretFromDb(userId, newSecret.getId());
 
         if (!newSecret.getName().isEmpty()) {
@@ -190,9 +189,6 @@ public class SecretService {
                     encryptContent(secret.getContent(), getAESAlgorithm(), getSecretPassword(), secret.getUserId(), ivParameterSpec) // secret.getInitializatonVector()
             );
         }
-
-        secretRepository.findByIdAndUserId(newSecret.getId(), userId);
-        secretRepository.save(secretRepository.findByIdAndUserId(newSecret.getId(), userId).get());
 
         saveUpdatedSecretInDb(userId, secret);
 

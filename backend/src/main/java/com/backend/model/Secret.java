@@ -1,7 +1,6 @@
 package com.backend.model;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
 import java.util.List;
