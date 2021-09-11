@@ -5,7 +5,7 @@ import com.backend.exception.ForbiddenAccess;
 import com.backend.model.Secret;
 import com.backend.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static com.backend.service.utils.Security.*;
 
@@ -28,25 +29,11 @@ public class SecretService {
     @Autowired
     private SecretRepository secretRepository;
 
-    @Autowired
-    private Environment environment;
+    @Value("${aes.password}")
+    private String secretPassword;
 
-    private static String secretPassword = null;
-    private static String aesAlgorithm = null;
-
-    private String getSecretPassword() {
-        if(secretPassword == null) {
-            secretPassword = environment.getProperty("aes.password");
-        }
-        return secretPassword;
-    }
-
-    private String getAESAlgorithm() {
-        if(aesAlgorithm == null) {
-            aesAlgorithm = environment.getProperty("aes.algorithm");
-        }
-        return aesAlgorithm;
-    }
+    @Value("${aes.algorithm}")
+    private String aesAlgorithm;
 
     private List<Byte> generateSeed() {
         final int seedSize = 16;
@@ -54,7 +41,7 @@ public class SecretService {
         new SecureRandom().nextBytes(preSeed);
 
         List<Byte> seed = new ArrayList<>();
-        for (int i = 0; i < seedSize; i ++) {
+        for (int i = 0; i < seedSize; i++) {
             seed.add(preSeed[i]);
         }
         return seed;
@@ -68,28 +55,34 @@ public class SecretService {
         return new IvParameterSpec(iv);
     }
 
-    public String create(String userId, Secret newSecret) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String create(String userId, Secret newSecret)
+            throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
+            BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
 
-        return create(userId,newSecret, getAESAlgorithm(), getSecretPassword());
+        return create(userId, newSecret, aesAlgorithm, secretPassword);
 
     }
 
-    public String create(String userId, Secret newSecret, String aesAlgorithm, String secretPassword) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String create(String userId, Secret newSecret, String aesAlgorithm, String secretPassword)
+            throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
+            BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
 
-//        Make sure the given userId matches the userId form the JWT token
+        // Generate new Id
+        newSecret.setId(UUID.randomUUID().toString());
+
+        // Make sure the given userId matches the userId form the JWT token
         newSecret.setUserId(userId);
 
-//        Generate and store the seed associated with the secret
+        // Generate and store the seed associated with the secret
         List<Byte> seed = generateSeed();
         newSecret.setSeed(seed);
 
-//        Generate the iv with the secret's seed
+        // Generate the iv with the secret's seed
         IvParameterSpec ivParameterSpec = generateIv(seed);
 
-//        Encrypt the content of the secret
-        newSecret.setContent(
-            encrypt(aesAlgorithm, newSecret.getContent(), generateKeyFromPassword(secretPassword, userId), ivParameterSpec)
-        );
+        // Encrypt the content of the secret
+        newSecret.setContent(encrypt(aesAlgorithm, newSecret.getContent(),
+                generateKeyFromPassword(secretPassword, userId), ivParameterSpec));
 
         secretRepository.save(newSecret);
 
@@ -100,8 +93,8 @@ public class SecretService {
 
         List<Secret> allSecretsOfUser = secretRepository.findByUserId(userId);
 
-//       Remove all encrypted content from the payload
-        for (Secret currentSecret : allSecretsOfUser ) {
+        // Remove all encrypted content from the payload
+        for (Secret currentSecret : allSecretsOfUser) {
             currentSecret.setContent(null);
             currentSecret.setSeed((null));
         }
@@ -111,34 +104,29 @@ public class SecretService {
 
     public Secret getSecretFromDb(String userId, String secretId) throws ForbiddenAccess, DoesntExist {
         // Get secret
-        if (secretRepository.findByIdAndUserId(secretId, userId).isEmpty()) {
+        Secret existingSecret = secretRepository.getByIds(secretId, userId);
+        if (existingSecret == null) {
             throw new DoesntExist("secretId given does not correspond to any stored secret");
         }
-        Secret secret = secretRepository.findByIdAndUserId(secretId, userId).get();
         // Verify owner
-        if (!secret.getUserId().equals(userId)) {
+        if (!existingSecret.getUserId().equals(userId)) {
             throw new ForbiddenAccess("User does not own the secret");
         }
         // Return
-        return secret;
+        return existingSecret;
     }
 
     public Secret saveUpdatedSecretInDb(String userId, Secret newSecret) throws ForbiddenAccess, DoesntExist {
-//        Verify secret's presence in repository
-        if (secretRepository.findByIdAndUserId(newSecret.getId(), userId).isEmpty()) {
+        // Verify secret's presence in repository
+        Secret existingSecret = secretRepository.getByIds(newSecret.getId(), userId);
+        if (existingSecret == null) {
             throw new DoesntExist("Given secret id does not correspond to any secret in repository");
         }
 
-//        Get secret
-        Secret secret = secretRepository.findByIdAndUserId(newSecret.getId(), userId).get();
-
-//        Verify owner
-        if (!secret.getUserId().equals(newSecret.getUserId())) {
+        // Verify owner
+        if (!existingSecret.getUserId().equals(newSecret.getUserId())) {
             throw new ForbiddenAccess("User does not own the secret");
         }
-
-        System.out.println(secret);
-        System.out.println(newSecret);
 
         secretRepository.save(newSecret);
         return newSecret;
@@ -154,20 +142,19 @@ public class SecretService {
 
     public Secret get(String userId, String secretId, boolean decrypt) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
         // Get secret
-        Secret secret = getSecretFromDb(userId,secretId);
+        Secret secret = getSecretFromDb(userId, secretId);
 
         // Optional desryption
-        if(decrypt) {
-//            Generate the iv with the secret's seed
+        if (decrypt) {
+            // Generate the iv with the secret's seed
             IvParameterSpec ivParameterSpec = generateIv(secret.getSeed());
-            secret.setContent(
-                    decryptContent(secret.getContent(), getAESAlgorithm(), getSecretPassword(), secret.getUserId(), ivParameterSpec) // secret.getInitializatonVector()
+            secret.setContent(decryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(), ivParameterSpec)
             );
         } else {
             secret.setContent(null);
         }
 
-//        Hide the seed
+        // Hide the seed
         secret.setSeed((null));
 
         // Return
@@ -183,10 +170,9 @@ public class SecretService {
         }
 
         if (!newSecret.getContent().isEmpty()) {
-//            Generate the iv with the secret's seed
+            // Generate the iv with the secret's seed
             IvParameterSpec ivParameterSpec = generateIv(secret.getSeed());
-            secret.setContent(
-                    encryptContent(secret.getContent(), getAESAlgorithm(), getSecretPassword(), secret.getUserId(), ivParameterSpec) // secret.getInitializatonVector()
+            secret.setContent(encryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(), ivParameterSpec)
             );
         }
 
@@ -198,17 +184,17 @@ public class SecretService {
     public void delete(String userId, String id) throws ForbiddenAccess, DoesntExist {
         // Get secret
         Secret secret = getSecretFromDb(userId, id);
-        if (secret.getUserId() != userId) {
+        if (!secret.getUserId().equals(userId)) {
             throw new ForbiddenAccess("User does not own the secret");
         }
 
-        secretRepository.deleteById(id);
+        secretRepository.deleteByIds(id, userId);
     }
 
     public int deleteAllUserSecrets(String userId) {
         List<Secret> allSecretsOfUser = secretRepository.findByUserId(userId);
         for (Secret currentSecret : allSecretsOfUser) {
-            secretRepository.deleteById(currentSecret.getId());
+            secretRepository.deleteByIds(currentSecret.getId(), userId);
         }
         return allSecretsOfUser.size();
     }

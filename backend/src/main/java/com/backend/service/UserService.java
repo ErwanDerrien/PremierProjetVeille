@@ -1,33 +1,53 @@
 package com.backend.service;
 
-import com.amazonaws.services.kms.model.AlreadyExistsException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.backend.exception.AlreadyExists;
 import com.backend.exception.DoesntExist;
+import com.backend.exception.InvalidPassword;
 import com.backend.exception.MissingParameter;
 import com.backend.model.User;
 import com.backend.repository.UserRepository;
-import org.apache.http.auth.AuthenticationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.stereotype.Service;
 
-import java.rmi.ServerError;
-import java.util.*;
-
-import static com.backend.service.utils.Security.hashPassword;
-import static com.backend.service.utils.Security.hashStrings;
+import java.util.Locale;
 
 @Service
-@ComponentScan(basePackages = {"com.backend.repository"})
 public class UserService {
+
+    // TODO: verifier si mettre le `userId` en lettres minuscules est toujours intéressant...
 
     @Autowired
     private UserRepository userRepository;
 
-    public String create(final User user) throws ServerError, MissingParameter, AlreadyExistsException {
+    public User get(String userId) throws DoesntExist {
+        User existingUser = userRepository.getById(userId);
+        if (existingUser == null) {
+            throw new DoesntExist("User already exist");
+        }
+        return existingUser;
+    }
+
+    private String preparePassword(String password) throws InvalidPassword {
+        // Check password quality
+        if (password == null) {
+            throw new InvalidPassword("Quality checks not met! Cannot be null...");
+        }
+        if (password.length() < 8) {
+            throw new InvalidPassword("Quality checks not met! Cannot be so short...");
+        }
+
+        // TODO: add more quality checks
+
+        return new BCryptPasswordEncoder().encode(password);
+    }
+
+    public String create(final User user) throws MissingParameter, AlreadyExists, InvalidPassword {
         // TODO : Verification de la validite de l'adresse courriel
         // TODO : Setup la vérification avec l'api de pwned –Nice to have–
 
-        if (user.getId().isEmpty() || user.getPassword().isEmpty()) {
+        if (user.getId() == null || user.getId().isEmpty() || user.getPassword() == null || user.getPassword().isEmpty()) {
             throw new MissingParameter("Missing at least a parameter for the given user");
         }
 
@@ -35,66 +55,35 @@ public class UserService {
         user.setId(user.getId().toLowerCase(Locale.ROOT));
 
         // Verify that there isn't already an other user with the same email address
-        Optional<User> existingUser = userRepository.findById(user.getId());
-        if (existingUser.isPresent()) {
-            throw new AlreadyExistsException("User already exist");
+        User existingUser = userRepository.getById(user.getId());
+        if (existingUser != null) {
+            throw new AlreadyExists("User already exist");
         }
 
         // Hash the password with the id
-        List<String> stringsToHash = new ArrayList<>();
-        stringsToHash.add(user.getPassword());
-        stringsToHash.add(user.getId());
+        user.setPassword(preparePassword(user.getPassword()));
 
-        user.setPassword(hashStrings(stringsToHash));
+        userRepository.save(user);
 
-        User createdUser = userRepository.save(user);
-
-        return createdUser.getId();
+        return user.getId();
     }
 
-    public void login(String id, String password) throws DoesntExist, ServerError, AuthenticationException {
-
-        // Verify that the email address that was given has no uppercase characters
-        id = id.toLowerCase(Locale.ROOT);
-
-        // Verify that there's already a user with the same email address
-        Optional<User> existingUser = userRepository.findById(id);
-        if (!existingUser.isPresent()) {
-            throw new DoesntExist("Wrong credentials");
+    public void modifyUserPassword(String userId, String password) throws DoesntExist, InvalidPassword {
+        User existingUser = userRepository.getById(userId);
+        if (existingUser == null) {
+            throw new DoesntExist("User already exist");
         }
 
-        // Verify that the passwords match
-        List<String> listTmp = new ArrayList<>();
-        listTmp.add(password);
-        listTmp.add(id);
-        String encodedPassword = hashStrings(listTmp);
-        if (!existingUser.get().getPassword().equals(encodedPassword)) {
-            throw new AuthenticationException("Wrong credentials");
-        }
-    }
-
-    public void modifyUserPassword(String id, String password) throws ServerError, DoesntExist {
-        Optional<User> modifiedUser = userRepository.findById(id);
-        if (modifiedUser.isEmpty()) {
-            throw new DoesntExist("Given userId doesn't belong to any stored user");
-        }
-        modifiedUser.get().setPassword(hashPassword(password, id));
-        userRepository.save(modifiedUser.get());
+        existingUser.setPassword(preparePassword(password));
+        userRepository.save(existingUser);
     }
 
     public void delete(String userId) throws DoesntExist {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new DoesntExist("Given userId doesn't belong to any stored user");
+        User existingUser = userRepository.getById(userId);
+        if (existingUser == null) {
+            throw new DoesntExist("User already exist");
         }
-        userRepository.deleteById(userId);
-//        TODO : expire JWT token because user does not exist anymore
-//        TODO : chain delete all secrets associated with the user (frontend or backend?)
-    }
 
-    public User get(String userId) throws DoesntExist {
-        if (!userRepository.findById(userId).isPresent()) {
-            throw new DoesntExist("Given userId doesn't belong to any stored user");
-        }
-        return userRepository.findById(userId).get();
+        userRepository.deleteById(userId);
     }
 }

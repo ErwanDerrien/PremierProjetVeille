@@ -34,30 +34,22 @@ public class SecretController {
 
             UriComponents uriComponent = uriComponentsBuilder.path("/api/v1/secret/{id}").buildAndExpand(secretId);
 
-            return ResponseEntity.status(201).location(
-                    uriComponent.toUri()
-            ).build();
+            return ResponseEntity.status(201).location(uriComponent.toUri()).build();
+
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException | InvalidAlgorithmParameterException | NoSuchPaddingException e) {
-            System.out.println("Unexpected error in SecretController.create() -- " + e.getMessage());
             return ResponseEntity.status(503).body("Unexpected error");
         }
     }
 
     @GetMapping(value = "/{secretId}", produces = "application/json")
-    public ResponseEntity<Secret> get(
-            @PathVariable("secretId") String secretId,
-            @RequestParam("decrypt") Boolean decrypt,
-            @RequestParam("userId") String userId,
-            UriComponentsBuilder uriComponentsBuilder
-    ) {
+    public ResponseEntity<Secret> get(@PathVariable("secretId") String secretId, @RequestParam("decrypt") Boolean decrypt, @RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
         try {
             Secret secret = secretService.get(userId, secretId, decrypt);
 
             UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(secret);
 
-            return ResponseEntity.status(200).location(
-                    uriComponent.toUri()
-            ).body(secret);
+            return ResponseEntity.status(200).location(uriComponent.toUri()).body(secret);
+
         } catch (ForbiddenAccess forbiddenAccess) {
             return ResponseEntity.status(401).build();
         } catch (DoesntExist doesntExist) {
@@ -69,31 +61,25 @@ public class SecretController {
     }
 
     @GetMapping(value = "/getAllEncryptedUsersSecretList")
-    public ResponseEntity<List<Secret>> getAllEncryptedUsersSecretList(
-            @RequestParam("userId") String userId,
-            UriComponentsBuilder uriComponentsBuilder
-    ) {
+    public ResponseEntity<List<Secret>> getAllSecrets(@RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
         try {
             List<Secret> allSecretsOfUser = secretService.getAllEncryptedUsersSecretList(userId);
 
             UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(allSecretsOfUser);
 
-            return ResponseEntity.status(200).location(
-                    uriComponent.toUri()
-            ).body(allSecretsOfUser);
+            return ResponseEntity.status(200).location(uriComponent.toUri()).body(allSecretsOfUser);
+
         } catch (Exception e) {
             return ResponseEntity.status(503).build();
         }
     }
 
-    @PutMapping()
-    public ResponseEntity<Void> update(
-            @RequestParam("userId") String userId,
-            @RequestBody Secret secret
-    ) {
+    @PutMapping(value = "/{secretId}")
+    public ResponseEntity<Void> update(@PathVariable("secretId") String secretId, @RequestParam("userId") String userId, @RequestBody Secret secret) {
         try {
             secretService.update(userId, secret);
             return ResponseEntity.status(200).build();
+
         } catch (ForbiddenAccess forbiddenAccess) {
             forbiddenAccess.printStackTrace();
             return ResponseEntity.status(401).build();
@@ -109,6 +95,7 @@ public class SecretController {
         try {
             secretService.delete(userId, secretId);
             return ResponseEntity.status(200).build();
+
         } catch (ForbiddenAccess forbiddenAccess) {
             forbiddenAccess.printStackTrace();
             return ResponseEntity.status(401).build();
@@ -117,7 +104,7 @@ public class SecretController {
         }
     }
 
-    @GetMapping(value = "/deleteAllUserSecrets/{userId}")
+    @DeleteMapping(value = "/deleteAllUserSecrets/{userId}")
     public int deleteAllUserSecrets(@PathVariable("userId") String userId) {
         return secretService.deleteAllUserSecrets(userId);
     }

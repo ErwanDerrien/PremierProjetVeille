@@ -1,10 +1,11 @@
 package com.backend.model;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import java.io.Serializable;
 
-@DynamoDBTable(tableName = "User")
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
+@DynamoDbBean
 public class User {
     private String id;
     private String password;
@@ -18,7 +19,7 @@ public class User {
         this.password = password;
     }
 
-    @DynamoDBHashKey
+    @DynamoDbPartitionKey
     public String getId() {
         return id;
     }
@@ -27,7 +28,6 @@ public class User {
         this.id = id;
     }
 
-    @DynamoDBAttribute
     public String getPassword() {
         return password;
     }
@@ -36,4 +36,11 @@ public class User {
         this.password = password;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }
