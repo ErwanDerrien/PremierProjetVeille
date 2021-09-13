@@ -6,7 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class UserPrincipal implements UserDetails {
-    
+
     private User user;
 
     public UserPrincipal(User user) {
@@ -15,8 +15,8 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-		System.out.println("* User Principal getAuthorities()");
-        // TODO Auto-generated method stub
+        System.out.println("* User Principal getAuthorities()");
+        // TODO : Auto-generated method stub
         return null;
     }
 

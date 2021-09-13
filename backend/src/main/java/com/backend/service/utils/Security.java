@@ -1,25 +1,19 @@
 package com.backend.service.utils;
 
-import com.backend.model.User;
-
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.rmi.ServerError;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
 
 public class Security {
 
     // https://www.baeldung.com/java-aes-encryption-decryption
-    public static SecretKey generateKeyFromPassword(String password, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static SecretKey generateKeyFromPassword(String password, String salt)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);

@@ -16,7 +16,8 @@ import java.util.Locale;
 @Service
 public class UserService {
 
-    // TODO: verifier si mettre le `userId` en lettres minuscules est toujours intéressant...
+    // TODO: verifier si mettre le `userId` en lettres minuscules est toujours
+    // intéressant...
 
     @Autowired
     private UserRepository userRepository;
@@ -38,7 +39,7 @@ public class UserService {
             throw new InvalidPassword("Quality checks not met! Cannot be so short...");
         }
 
-        // TODO: add more quality checks
+        // TODO: Ajouter des criteres de complexite de mot de passe
 
         return new BCryptPasswordEncoder().encode(password);
     }
@@ -47,7 +48,8 @@ public class UserService {
         // TODO : Verification de la validite de l'adresse courriel
         // TODO : Setup la vérification avec l'api de pwned –Nice to have–
 
-        if (user.getId() == null || user.getId().isEmpty() || user.getPassword() == null || user.getPassword().isEmpty()) {
+        if (user.getId() == null || user.getId().isEmpty() || user.getPassword() == null
+                || user.getPassword().isEmpty()) {
             throw new MissingParameter("Missing at least a parameter for the given user");
         }
 

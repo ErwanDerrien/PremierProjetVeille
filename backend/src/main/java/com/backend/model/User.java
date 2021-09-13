@@ -1,7 +1,5 @@
 package com.backend.model;
 
-import java.io.Serializable;
-
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
@@ -9,7 +7,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 public class User {
     private String id;
     private String password;
-
 
     public User() {
     }
@@ -38,9 +35,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id='" + id + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+        return "User{" + "id='" + id + '\'' + ", password='" + password + '\'' + '}';
     }
 }
