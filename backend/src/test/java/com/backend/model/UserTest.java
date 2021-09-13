@@ -25,26 +25,32 @@ public class UserTest {
     void testGetId() {
         assertNull(emptyUser.getId());
         assertEquals("id", fullUser.getId());
+        assertEquals("id", fullUser.getId());
     }
 
     @Test
     void testGetPassword() {
         assertNull(emptyUser.getPassword());
-        assertEquals(emptyUser.getPassword(), "password");
+        assertEquals("password", fullUser.getPassword());
     }
 
     @Test
     void testSetId() {
-
+        assertEquals("id", fullUser.getId());
+        fullUser.setId("newId");
+        assertEquals("newId", fullUser.getId());
     }
 
     @Test
     void testSetPassword() {
-
+        assertEquals("password", fullUser.getPassword());
+        fullUser.setPassword("newPassword");
+        assertEquals("newPassword", fullUser.getPassword());
     }
 
     @Test
     void testToString() {
-
+        assertEquals("User{id='null', password='null'}", emptyUser.toString());
+        assertEquals("User{id='id', password='password'}", fullUser.toString());
     }
 }

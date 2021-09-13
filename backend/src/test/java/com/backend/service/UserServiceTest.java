@@ -1,9 +1,11 @@
 package com.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 
 import com.backend.exception.DoesntExist;
+import com.backend.exception.InvalidPassword;
 import com.backend.model.User;
 import com.backend.repository.UserRepository;
 
@@ -25,7 +27,6 @@ public class UserServiceTest {
 
     @Test
     void testCreate() {
-
     }
 
     @Test
@@ -56,7 +57,15 @@ public class UserServiceTest {
     }
 
     @Test
-    void testModifyUserPassword() {
+    void testModifyUserPassword() throws DoesntExist, InvalidPassword {
+        User testUser = new User();
+        testUser.setPassword("password");
+        when(userRepository.getById("testId")).thenReturn(testUser);
 
+        String originalHashedPassword = userService.get("testId").getPassword();
+        userService.modifyUserPassword("testId", "newPassword");
+        String newHashedPassword = userService.get("testId").getPassword();
+
+        assertNotEquals(originalHashedPassword, newHashedPassword);
     }
 }

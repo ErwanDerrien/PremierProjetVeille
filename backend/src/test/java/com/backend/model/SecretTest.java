@@ -35,17 +35,14 @@ public class SecretTest {
 
     @Test
     void testGetName() {
-
-    }
-
-    @Test
-    void testGetSeed() {
-
+        assertNull(emptySecret.getName());
+        assertEquals("name", fullSecret.getName());
     }
 
     @Test
     void testGetUserId() {
-
+        assertNull(emptySecret.getUserId());
+        assertEquals("userId", fullSecret.getUserId());
     }
 
     @Test
@@ -57,26 +54,30 @@ public class SecretTest {
 
     @Test
     void testSetId() {
-
+        assertEquals("id", fullSecret.getId());
+        fullSecret.setId("newId");
+        assertEquals("newId", fullSecret.getId());
     }
 
     @Test
     void testSetName() {
-
-    }
-
-    @Test
-    void testSetSeed() {
-
+        assertEquals("name", fullSecret.getName());
+        fullSecret.setName("newName");
+        assertEquals("newName", fullSecret.getName());
     }
 
     @Test
     void testSetUserId() {
-
+        assertEquals("name", fullSecret.getName());
+        fullSecret.setName("newName");
+        assertEquals("newName", fullSecret.getName());
     }
 
     @Test
     void testToString() {
-
+        assertEquals("Secret{id='null', userId='null', name='null', content='null', seed=null}",
+                emptySecret.toString());
+        assertEquals("Secret{id='id', userId='userId', name='name', content='content', seed=null}",
+                fullSecret.toString());
     }
 }
