@@ -23,9 +23,10 @@ public class UserService {
     private UserRepository userRepository;
 
     public User get(String userId) throws DoesntExist {
+        userId = userId.toLowerCase();
         User existingUser = userRepository.getById(userId);
         if (existingUser == null) {
-            throw new DoesntExist("User already exist");
+            throw new DoesntExist("User does not exist");
         }
         return existingUser;
     }
@@ -71,9 +72,10 @@ public class UserService {
     }
 
     public void modifyUserPassword(String userId, String password) throws DoesntExist, InvalidPassword {
+        userId = userId.toLowerCase();
         User existingUser = userRepository.getById(userId);
         if (existingUser == null) {
-            throw new DoesntExist("User already exist");
+            throw new DoesntExist("User does not exist");
         }
 
         existingUser.setPassword(preparePassword(password));
@@ -81,9 +83,10 @@ public class UserService {
     }
 
     public void delete(String userId) throws DoesntExist {
-        User existingUser = userRepository.getById(userId);
+        userId = userId.toLowerCase();
+        User existingUser = userRepository.getById(userId.toLowerCase());
         if (existingUser == null) {
-            throw new DoesntExist("User already exist");
+            throw new DoesntExist("User does not exist");
         }
 
         userRepository.deleteById(userId);
