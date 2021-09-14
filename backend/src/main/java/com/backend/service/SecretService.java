@@ -66,6 +66,7 @@ public class SecretService {
     public String create(String userId, Secret newSecret, String aesAlgorithm, String secretPassword)
             throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException,
             BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+        userId = userId.toLowerCase();
 
         // Generate new Id
         newSecret.setId(UUID.randomUUID().toString());
@@ -90,6 +91,7 @@ public class SecretService {
     }
 
     public List<Secret> getAllEncryptedUsersSecretList(String userId) {
+        userId = userId.toLowerCase();
 
         List<Secret> allSecretsOfUser = secretRepository.findByUserId(userId);
 
@@ -103,6 +105,8 @@ public class SecretService {
     }
 
     public Secret getSecretFromDb(String userId, String secretId) throws ForbiddenAccess, DoesntExist {
+        userId = userId.toLowerCase();
+
         // Get secret
         Secret existingSecret = secretRepository.getByIds(secretId, userId);
         if (existingSecret == null) {
@@ -117,6 +121,8 @@ public class SecretService {
     }
 
     public Secret saveUpdatedSecretInDb(String userId, Secret newSecret) throws ForbiddenAccess, DoesntExist {
+        userId = userId.toLowerCase();
+
         // Verify secret's presence in repository
         Secret existingSecret = secretRepository.getByIds(newSecret.getId(), userId);
         if (existingSecret == null) {
@@ -132,15 +138,23 @@ public class SecretService {
         return newSecret;
     }
 
-    public String decryptContent(String content, String algorithm, String secretPassword, String salt, IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String decryptContent(String content, String algorithm, String secretPassword, String salt,
+            IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
         return decrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }
 
-    public String encryptContent(String content, String algorithm, String secretPassword, String salt, IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+    public String encryptContent(String content, String algorithm, String secretPassword, String salt,
+            IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
         return encrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }
 
-    public Secret get(String userId, String secretId, boolean decrypt) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
+    public Secret get(String userId, String secretId, boolean decrypt) throws ForbiddenAccess, BadPaddingException,
+            InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
+        userId = userId.toLowerCase();
+
         // Get secret
         Secret secret = getSecretFromDb(userId, secretId);
 
@@ -148,8 +162,8 @@ public class SecretService {
         if (decrypt) {
             // Generate the iv with the secret's seed
             IvParameterSpec ivParameterSpec = generateIv(secret.getSeed());
-            secret.setContent(decryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(), ivParameterSpec)
-            );
+            secret.setContent(decryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(),
+                    ivParameterSpec));
         } else {
             secret.setContent(null);
         }
@@ -161,7 +175,11 @@ public class SecretService {
         return secret;
     }
 
-    public Secret update(String userId, Secret newSecret) throws ForbiddenAccess, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
+    public Secret update(String userId, Secret newSecret) throws ForbiddenAccess, BadPaddingException,
+            InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
+        userId = userId.toLowerCase();
+
         // Get secret
         Secret secret = getSecretFromDb(userId, newSecret.getId());
 
@@ -172,8 +190,8 @@ public class SecretService {
         if (!newSecret.getContent().isEmpty()) {
             // Generate the iv with the secret's seed
             IvParameterSpec ivParameterSpec = generateIv(secret.getSeed());
-            secret.setContent(encryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(), ivParameterSpec)
-            );
+            secret.setContent(encryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(),
+                    ivParameterSpec));
         }
 
         saveUpdatedSecretInDb(userId, secret);
@@ -182,6 +200,8 @@ public class SecretService {
     }
 
     public void delete(String userId, String id) throws ForbiddenAccess, DoesntExist {
+        userId = userId.toLowerCase();
+
         // Get secret
         Secret secret = getSecretFromDb(userId, id);
         if (!secret.getUserId().equals(userId)) {
@@ -192,6 +212,8 @@ public class SecretService {
     }
 
     public int deleteAllUserSecrets(String userId) {
+        userId = userId.toLowerCase();
+
         List<Secret> allSecretsOfUser = secretRepository.findByUserId(userId);
         for (Secret currentSecret : allSecretsOfUser) {
             secretRepository.deleteByIds(currentSecret.getId(), userId);
@@ -200,19 +222,3 @@ public class SecretService {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
