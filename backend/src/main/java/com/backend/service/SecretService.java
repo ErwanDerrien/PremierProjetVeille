@@ -30,12 +30,12 @@ public class SecretService {
     private SecretRepository secretRepository;
 
     @Value("${aes.password}")
-    private String secretPassword;
+    protected String secretPassword;
 
     @Value("${aes.algorithm}")
     private String aesAlgorithm;
 
-    private List<Byte> generateSeed() {
+    protected List<Byte> generateSeed() {
         final int seedSize = 16;
         byte[] preSeed = new byte[seedSize];
         new SecureRandom().nextBytes(preSeed);
@@ -95,6 +95,11 @@ public class SecretService {
 
         List<Secret> allSecretsOfUser = secretRepository.findByUserId(userId);
 
+        // Return empty array if no corresponding secrets
+        if (allSecretsOfUser == null) {
+            return new ArrayList<Secret>();
+        }
+
         // Remove all encrypted content from the payload
         for (Secret currentSecret : allSecretsOfUser) {
             currentSecret.setContent(null);
@@ -104,7 +109,7 @@ public class SecretService {
         return allSecretsOfUser;
     }
 
-    public Secret getSecretFromDb(String userId, String secretId) throws ForbiddenAccess, DoesntExist {
+    public Secret getSecretFromDb(String secretId, String userId) throws ForbiddenAccess, DoesntExist {
         userId = userId.toLowerCase();
 
         // Get secret
@@ -141,6 +146,13 @@ public class SecretService {
     public String decryptContent(String content, String algorithm, String secretPassword, String salt,
             IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException,
             InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
+        System.out.println(content);
+        System.out.println(algorithm);
+        System.out.println(secretPassword);
+        System.out.println(salt);
+        System.out.println(generateKeyFromPassword(secretPassword, salt));
+        System.out.println(iv);
+
         return decrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }
 
@@ -150,20 +162,20 @@ public class SecretService {
         return encrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }
 
-    public Secret get(String userId, String secretId, boolean decrypt) throws ForbiddenAccess, BadPaddingException,
+    public Secret get(String secretId, String userId, boolean decrypt) throws ForbiddenAccess, BadPaddingException,
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
             NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
         userId = userId.toLowerCase();
 
         // Get secret
-        Secret secret = getSecretFromDb(userId, secretId);
+        Secret secret = getSecretFromDb(secretId, userId);
 
         // Optional desryption
         if (decrypt) {
             // Generate the iv with the secret's seed
             IvParameterSpec ivParameterSpec = generateIv(secret.getSeed());
-            secret.setContent(decryptContent(secret.getContent(), aesAlgorithm, secretPassword, secret.getUserId(),
-                    ivParameterSpec));
+            secret.setContent(decryptContent(secret.getContent(), this.aesAlgorithm, this.secretPassword,
+                    secret.getUserId(), ivParameterSpec));
         } else {
             secret.setContent(null);
         }
@@ -181,7 +193,7 @@ public class SecretService {
         userId = userId.toLowerCase();
 
         // Get secret
-        Secret secret = getSecretFromDb(userId, newSecret.getId());
+        Secret secret = getSecretFromDb(newSecret.getId(), userId);
 
         if (!newSecret.getName().isEmpty()) {
             secret.setName(newSecret.getName());
@@ -203,7 +215,7 @@ public class SecretService {
         userId = userId.toLowerCase();
 
         // Get secret
-        Secret secret = getSecretFromDb(userId, id);
+        Secret secret = getSecretFromDb(id, userId);
         if (!secret.getUserId().equals(userId)) {
             throw new ForbiddenAccess("User does not own the secret");
         }
