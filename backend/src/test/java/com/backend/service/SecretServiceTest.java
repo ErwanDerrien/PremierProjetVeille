@@ -1,7 +1,11 @@
 package com.backend.service;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -21,16 +25,13 @@ import com.backend.model.User;
 import com.backend.repository.SecretRepository;
 import com.backend.repository.UserRepository;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 // @ActiveProfiles("test")
@@ -53,6 +54,8 @@ public class SecretServiceTest {
 
     private User testUser;
     final String userTestId = "userTestId";
+
+    final String wrongUserId = "wrongUserId";
 
     private Secret testSecret;
     final String secretTestId = "secretTestId";
@@ -101,18 +104,17 @@ public class SecretServiceTest {
     }
 
     @Test
-    void testCreate2() {
-
-    }
-
-    @Test
     void testDecryptContent() {
 
     }
 
     @Test
-    void testDelete() {
+    void testDelete() throws ForbiddenAccess, DoesntExist {
+        when(secretRepository.getByIds(secretTestId, userTestId.toLowerCase())).thenReturn(testSecret);
 
+        secretService.delete(secretTestId, userTestId);
+
+        verify(secretRepository, times(1)).deleteByIds(testSecret.getId(), userTestId.toLowerCase());
     }
 
     @Test
@@ -122,11 +124,6 @@ public class SecretServiceTest {
 
     @Test
     void testEncryptContent() {
-
-    }
-
-    @Test
-    void testGenerateIv() {
 
     }
 
@@ -141,7 +138,7 @@ public class SecretServiceTest {
         assertEquals(testSecret, retrievedSecret);
     }
 
-    // @Ignore
+    @Disabled
     @Test
     void testSuccessfulGetDecrypted() throws InvalidKeyException, BadPaddingException,
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
@@ -170,17 +167,50 @@ public class SecretServiceTest {
     }
 
     @Test
-    void testGetSecretFromDb() {
+    void testSuccessGetSecretFromDb() throws DoesntExist {
+        when(secretRepository.getByIds(secretTestId, userTestId.toLowerCase())).thenReturn(testSecret);
 
+        assertEquals(testSecret, secretService.getSecretFromDb(secretTestId, userTestId));
     }
 
     @Test
-    void testSaveUpdatedSecretInDb() {
+    void testFailGetSecretFromDbDoesntExist() throws DoesntExist {
+        when(secretRepository.getByIds(secretTestId, userTestId.toLowerCase())).thenReturn(null);
 
+        assertThrows(DoesntExist.class, () -> {
+            secretService.getSecretFromDb(secretTestId, userTestId);
+        });
     }
 
     @Test
-    void testUpdate() {
+    void testSaveUpdatedSecretInDb() throws ForbiddenAccess, DoesntExist, InvalidKeyException, BadPaddingException,
+            InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            NoSuchPaddingException, InvalidKeySpecException {
+        when(secretRepository.getByIds(secretTestId, userTestId.toLowerCase())).thenReturn(testSecret);
 
+        Secret origialSecret = secretService.getSecretFromDb(secretTestId, userTestId);
+        String originalContent = origialSecret.getContent();
+        origialSecret.setContent("newContent");
+        secretService.saveUpdatedSecretInDb(origialSecret, userTestId);
+        Secret updatedSecret = secretService.getSecretFromDb(secretTestId, userTestId);
+        String updatedContent = updatedSecret.getContent();
+
+        assertNotEquals(originalContent, updatedContent);
+    }
+
+    @Test
+    void testUpdate() throws InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeySpecException,
+            ForbiddenAccess, DoesntExist {
+        when(secretRepository.getByIds(secretTestId, userTestId.toLowerCase())).thenReturn(testSecret);
+
+        Secret origialSecret = secretService.getSecretFromDb(secretTestId, userTestId);
+        String originalContent = origialSecret.getContent();
+        origialSecret.setContent("newContent");
+        secretService.update(origialSecret, userTestId);
+        Secret updatedSecret = secretService.getSecretFromDb(secretTestId, userTestId);
+        String updatedContent = updatedSecret.getContent();
+
+        assertNotEquals(originalContent, updatedContent);
     }
 }

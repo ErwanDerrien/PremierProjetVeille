@@ -109,7 +109,7 @@ public class SecretService {
         return allSecretsOfUser;
     }
 
-    public Secret getSecretFromDb(String secretId, String userId) throws ForbiddenAccess, DoesntExist {
+    public Secret getSecretFromDb(String secretId, String userId) throws DoesntExist {
         userId = userId.toLowerCase();
 
         // Get secret
@@ -117,15 +117,12 @@ public class SecretService {
         if (existingSecret == null) {
             throw new DoesntExist("secretId given does not correspond to any stored secret");
         }
-        // Verify owner
-        if (!existingSecret.getUserId().equals(userId)) {
-            throw new ForbiddenAccess("User does not own the secret");
-        }
+
         // Return
         return existingSecret;
     }
 
-    public Secret saveUpdatedSecretInDb(String userId, Secret newSecret) throws ForbiddenAccess, DoesntExist {
+    public Secret saveUpdatedSecretInDb(Secret newSecret, String userId) throws ForbiddenAccess, DoesntExist {
         userId = userId.toLowerCase();
 
         // Verify secret's presence in repository
@@ -187,7 +184,7 @@ public class SecretService {
         return secret;
     }
 
-    public Secret update(String userId, Secret newSecret) throws ForbiddenAccess, BadPaddingException,
+    public Secret update(Secret newSecret, String userId) throws ForbiddenAccess, BadPaddingException,
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
             NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, DoesntExist {
         userId = userId.toLowerCase();
@@ -206,12 +203,12 @@ public class SecretService {
                     ivParameterSpec));
         }
 
-        saveUpdatedSecretInDb(userId, secret);
+        saveUpdatedSecretInDb(secret, userId);
 
         return secret;
     }
 
-    public void delete(String userId, String id) throws ForbiddenAccess, DoesntExist {
+    public void delete(String id, String userId) throws ForbiddenAccess, DoesntExist {
         userId = userId.toLowerCase();
 
         // Get secret

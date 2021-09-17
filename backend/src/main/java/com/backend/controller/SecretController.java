@@ -26,9 +26,9 @@ public class SecretController {
     @Autowired
     SecretService secretService;
 
-
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody Secret secret, @RequestParam String userId, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<String> create(@RequestBody Secret secret, @RequestParam String userId,
+            UriComponentsBuilder uriComponentsBuilder) {
         try {
             String secretId = secretService.create(userId, secret);
 
@@ -36,13 +36,16 @@ public class SecretController {
 
             return ResponseEntity.status(201).location(uriComponent.toUri()).build();
 
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException | InvalidAlgorithmParameterException | NoSuchPaddingException e) {
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException
+                | BadPaddingException | InvalidAlgorithmParameterException | NoSuchPaddingException e) {
             return ResponseEntity.status(503).body("Unexpected error");
         }
     }
 
     @GetMapping(value = "/{secretId}", produces = "application/json")
-    public ResponseEntity<Secret> get(@PathVariable("secretId") String secretId, @RequestParam("decrypt") Boolean decrypt, @RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<Secret> get(@PathVariable("secretId") String secretId,
+            @RequestParam("decrypt") Boolean decrypt, @RequestParam("userId") String userId,
+            UriComponentsBuilder uriComponentsBuilder) {
         try {
             Secret secret = secretService.get(userId, secretId, decrypt);
 
@@ -54,14 +57,17 @@ public class SecretController {
             return ResponseEntity.status(401).build();
         } catch (DoesntExist doesntExist) {
             return ResponseEntity.status(404).build();
-        } catch (BadPaddingException | InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException e) {
+        } catch (BadPaddingException | InvalidAlgorithmParameterException | InvalidKeySpecException
+                | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException
+                | NoSuchAlgorithmException e) {
             e.printStackTrace();
             return ResponseEntity.status(503).build();
         }
     }
 
     @GetMapping(value = "/getAllEncryptedUsersSecretList")
-    public ResponseEntity<List<Secret>> getAllSecrets(@RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<List<Secret>> getAllSecrets(@RequestParam("userId") String userId,
+            UriComponentsBuilder uriComponentsBuilder) {
         try {
             List<Secret> allSecretsOfUser = secretService.getAllEncryptedUsersSecretList(userId);
 
@@ -75,15 +81,18 @@ public class SecretController {
     }
 
     @PutMapping(value = "/{secretId}")
-    public ResponseEntity<Void> update(@PathVariable("secretId") String secretId, @RequestParam("userId") String userId, @RequestBody Secret secret) {
+    public ResponseEntity<Void> update(@PathVariable("secretId") String secretId, @RequestParam("userId") String userId,
+            @RequestBody Secret secret) {
         try {
-            secretService.update(userId, secret);
+            secretService.update(secret, userId);
             return ResponseEntity.status(200).build();
 
         } catch (ForbiddenAccess forbiddenAccess) {
             forbiddenAccess.printStackTrace();
             return ResponseEntity.status(401).build();
-        } catch (InvalidKeySpecException | IllegalBlockSizeException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException e) {
+        } catch (InvalidKeySpecException | IllegalBlockSizeException | NoSuchPaddingException
+                | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException
+                | NoSuchAlgorithmException e) {
             return ResponseEntity.status(503).build();
         } catch (DoesntExist doesntExist) {
             return ResponseEntity.status(404).build();
@@ -91,9 +100,10 @@ public class SecretController {
     }
 
     @DeleteMapping(value = "/{secretId}")
-    public ResponseEntity<Void> delete(@RequestParam("userId") String userId, @PathVariable("secretId") String secretId) {
+    public ResponseEntity<Void> delete(@RequestParam("userId") String userId,
+            @PathVariable("secretId") String secretId) {
         try {
-            secretService.delete(userId, secretId);
+            secretService.delete(secretId, userId);
             return ResponseEntity.status(200).build();
 
         } catch (ForbiddenAccess forbiddenAccess) {
@@ -110,17 +120,3 @@ public class SecretController {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
