@@ -16,18 +16,17 @@ public class UserPrincipal implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         System.out.println("* User Principal getAuthorities()");
-        // TODO : Auto-generated method stub
         return null;
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user == null ? null : user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getId();
+        return user == null ? null : user.getId();
     }
 
     @Override

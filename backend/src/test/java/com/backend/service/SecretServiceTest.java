@@ -1,6 +1,6 @@
 package com.backend.service;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.times;
@@ -73,7 +73,7 @@ public class SecretServiceTest {
     }
 
     @BeforeEach
-    public void prepareSecret() {
+    public void prepareSecrets() {
         testSecret = new Secret();
         testSecret.setId(secretTestId);
         testSecret.setUserId(userTestId.toLowerCase());

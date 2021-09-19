@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,8 @@ import java.util.Locale;
 @Service
 public class UserService {
 
-    // TODO: verifier si mettre le `userId` en lettres minuscules est toujours
-    // intéressant...
+    @Value("${password.salt:--64342!7532--}")
+    private String salt;
 
     @Autowired
     private UserRepository userRepository;
@@ -31,7 +32,7 @@ public class UserService {
         return existingUser;
     }
 
-    private String preparePassword(String password) throws InvalidPassword {
+    public String preparePassword(String userId, String password) throws InvalidPassword {
         // Check password quality
         if (password == null) {
             throw new InvalidPassword("Quality checks not met! Cannot be null...");
@@ -42,7 +43,7 @@ public class UserService {
 
         // TODO: Ajouter des criteres de complexite de mot de passe
 
-        return new BCryptPasswordEncoder().encode(password);
+        return new BCryptPasswordEncoder().encode(userId + salt + password);
     }
 
     public String create(final User user) throws MissingParameter, AlreadyExists, InvalidPassword {
@@ -64,7 +65,7 @@ public class UserService {
         }
 
         // Hash the password with the id
-        user.setPassword(preparePassword(user.getPassword()));
+        user.setPassword(preparePassword(user.getId(), user.getPassword()));
 
         userRepository.save(user);
 
@@ -78,7 +79,7 @@ public class UserService {
             throw new DoesntExist("User does not exist");
         }
 
-        existingUser.setPassword(preparePassword(password));
+        existingUser.setPassword(preparePassword(userId, password));
         userRepository.save(existingUser);
     }
 

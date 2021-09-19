@@ -48,20 +48,6 @@ public class UserController {
         }
     }
 
-    // @PostMapping(value = "/login")
-    // public ResponseEntity<Void> login(@RequestBody User user) {
-    // try {
-    // userService.login(user.getId(), user.getPassword());
-    // return ResponseEntity.status(200).build();
-    // } catch (DoesntExist doesntExist) {
-    // return ResponseEntity.status(404).build();
-    // } catch (ServerError serverError) {
-    // return ResponseEntity.status(503).build();
-    // } catch (AuthenticationException e) {
-    // return ResponseEntity.status(401).build();
-    // }
-    // }
-
     @GetMapping(value = "/{userId}", produces = "application/json")
     public ResponseEntity<User> get(@RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
         try {
@@ -101,3 +87,17 @@ public class UserController {
     }
 
 }
+
+// @PostMapping(value = "/login")
+// public ResponseEntity<Void> login(@RequestBody User user) {
+// try {
+// userService.login(user.getId(), user.getPassword());
+// return ResponseEntity.status(200).build();
+// } catch (DoesntExist doesntExist) {
+// return ResponseEntity.status(404).build();
+// } catch (ServerError serverError) {
+// return ResponseEntity.status(503).build();
+// } catch (AuthenticationException e) {
+// return ResponseEntity.status(401).build();
+// }
+// }

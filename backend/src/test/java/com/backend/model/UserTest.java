@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
+
 public class UserTest {
 
     private User emptyUser;
@@ -38,7 +40,7 @@ public class UserTest {
     void testSetId() {
         assertEquals("id", fullUser.getId());
         fullUser.setId("newId");
-        assertEquals("newId", fullUser.getId());
+        assertEquals("newId".toLowerCase(Locale.ROOT), fullUser.getId());
     }
 
     @Test
