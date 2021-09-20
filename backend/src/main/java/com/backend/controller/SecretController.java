@@ -1,5 +1,7 @@
 package com.backend.controller;
 
+import java.security.Principal;
+
 import com.backend.exception.DoesntExist;
 import com.backend.exception.ForbiddenAccess;
 import com.backend.model.Secret;
@@ -27,10 +29,10 @@ public class SecretController {
     SecretService secretService;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody Secret secret, @RequestParam String userId,
-            UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<String> create(@RequestBody Secret secret, UriComponentsBuilder uriComponentsBuilder,
+            Principal loggedUser) {
         try {
-            String secretId = secretService.create(userId, secret);
+            String secretId = secretService.create(loggedUser.getName(), secret);
 
             UriComponents uriComponent = uriComponentsBuilder.path("/api/v1/secret/{id}").buildAndExpand(secretId);
 
@@ -44,10 +46,9 @@ public class SecretController {
 
     @GetMapping(value = "/{secretId}", produces = "application/json")
     public ResponseEntity<Secret> get(@PathVariable("secretId") String secretId,
-            @RequestParam("decrypt") Boolean decrypt, @RequestParam("userId") String userId,
-            UriComponentsBuilder uriComponentsBuilder) {
+            @RequestParam("decrypt") Boolean decrypt, UriComponentsBuilder uriComponentsBuilder, Principal loggedUser) {
         try {
-            Secret secret = secretService.get(userId, secretId, decrypt);
+            Secret secret = secretService.get(loggedUser.getName(), secretId, decrypt);
 
             UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(secret);
 
@@ -66,10 +67,9 @@ public class SecretController {
     }
 
     @GetMapping(value = "/getAllEncryptedUsersSecretList")
-    public ResponseEntity<List<Secret>> getAllSecrets(@RequestParam("userId") String userId,
-            UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<List<Secret>> getAllSecrets(UriComponentsBuilder uriComponentsBuilder, Principal loggedUser) {
         try {
-            List<Secret> allSecretsOfUser = secretService.getAllEncryptedUsersSecretList(userId);
+            List<Secret> allSecretsOfUser = secretService.getAllEncryptedUsersSecretList(loggedUser.getName());
 
             UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(allSecretsOfUser);
 
@@ -81,10 +81,10 @@ public class SecretController {
     }
 
     @PutMapping(value = "/{secretId}")
-    public ResponseEntity<Void> update(@PathVariable("secretId") String secretId, @RequestParam("userId") String userId,
-            @RequestBody Secret secret) {
+    public ResponseEntity<Void> update(@PathVariable("secretId") String secretId, @RequestBody Secret secret,
+            Principal loggedUser) {
         try {
-            secretService.update(secret, userId);
+            secretService.update(secret, loggedUser.getName());
             return ResponseEntity.status(200).build();
 
         } catch (ForbiddenAccess forbiddenAccess) {
@@ -100,10 +100,9 @@ public class SecretController {
     }
 
     @DeleteMapping(value = "/{secretId}")
-    public ResponseEntity<Void> delete(@RequestParam("userId") String userId,
-            @PathVariable("secretId") String secretId) {
+    public ResponseEntity<Void> delete(@PathVariable("secretId") String secretId, Principal loggedUser) {
         try {
-            secretService.delete(secretId, userId);
+            secretService.delete(secretId, loggedUser.getName());
             return ResponseEntity.status(200).build();
 
         } catch (ForbiddenAccess forbiddenAccess) {
@@ -114,9 +113,9 @@ public class SecretController {
         }
     }
 
-    @DeleteMapping(value = "/deleteAllUserSecrets/{userId}")
-    public int deleteAllUserSecrets(@PathVariable("userId") String userId) {
-        return secretService.deleteAllUserSecrets(userId);
+    @DeleteMapping
+    public int deleteAllUserSecrets(Principal loggedUser) {
+        return secretService.deleteAllUserSecrets(loggedUser.getName());
     }
 
 }

@@ -2,11 +2,14 @@ package com.backend.controller;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,7 +52,13 @@ public class UserController {
     }
 
     @GetMapping(value = "/{userId}", produces = "application/json")
-    public ResponseEntity<User> get(@RequestParam("userId") String userId, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<User> get(@PathVariable String userId, UriComponentsBuilder uriComponentsBuilder,
+            Principal loggedUser) {
+
+        if (!loggedUser.getName().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
         try {
             User user = userService.get(userId);
 
@@ -61,7 +70,13 @@ public class UserController {
     }
 
     @PutMapping(value = "/{userId}")
-    public ResponseEntity<Void> modifyUserPassword(@RequestBody User user, @RequestParam String userId) {
+    public ResponseEntity<Void> modifyUserPassword(@RequestBody User user, @PathVariable String userId,
+            Principal loggedUser) {
+
+        if (!loggedUser.getName().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
         try {
             userService.modifyUserPassword(userId, user.getPassword());
             return ResponseEntity.status(200).build();
@@ -76,7 +91,12 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{userId}")
-    public ResponseEntity<Void> delete(@RequestParam String userId) {
+    public ResponseEntity<Void> delete(@PathVariable String userId, Principal loggedUser) {
+
+        if (!loggedUser.getName().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
         try {
             userService.delete(userId);
             return ResponseEntity.status(200).build();
