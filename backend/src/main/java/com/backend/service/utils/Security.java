@@ -49,43 +49,4 @@ public class Security {
         byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
         return new String(plainText);
     }
-
-    // private String JWTGenerator(String[] headerInfo, String payloadInfo, String
-    // signatureInfo) throws ServerError {
-
-    // JSONObject header = new JSONObject();
-    // header.put("alg", "HS256");
-    // header.put("typ", "JWT");
-
-    // JSONObject payload = new JSONObject();
-    // payload.put("sub", "User id");
-    // payload.put("exp", "86400");
-
-    // List<String> signatureToHash = new ArrayList<>();
-    // signatureToHash.add(Base64.getUrlEncoder().encodeToString(header.toString().getBytes()));
-    // signatureToHash.add(Base64.getUrlEncoder().encodeToString(payload.toString().getBytes()));
-
-    // String testSecret = "wan";
-
-    // signatureToHash.add(testSecret);
-
-    // String signature = hashStrings(signatureToHash);
-
-    // String base64Header = base64URLEncode(header);
-    // String base64Payload = base64URLEncode(payload);
-    // // String base64Payload =
-    // Base64.getEncoder().encodeToString(payload.toString().getBytes());
-
-    // String JWT = base64Header + "." + base64Payload + "." + signature;
-
-    // System.out.println(JWT);
-
-    // return null;
-    // }
-
-    // public static String base64URLEncode(JSONObject input) {
-    // String endodedInput =
-    // Base64.getUrlEncoder().encodeToString(input.toString().getBytes());
-    // return endodedInput;
-    // }
 }

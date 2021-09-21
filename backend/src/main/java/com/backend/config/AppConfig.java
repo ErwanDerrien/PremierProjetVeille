@@ -1,6 +1,5 @@
 package com.backend.config;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +31,7 @@ public class AppConfig {
     public DynamoDbClient getDynamoDbClient() throws URISyntaxException {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
-        return DynamoDbClient.builder().endpointOverride(new URI(endpoint)).region(Region.of(region))
+        return DynamoDbClient.builder().region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
     }
 

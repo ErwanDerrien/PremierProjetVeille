@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.http.HttpStatus;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -36,7 +37,7 @@ public class SecretController {
 
             UriComponents uriComponent = uriComponentsBuilder.path("/api/v1/secret/{id}").buildAndExpand(secretId);
 
-            return ResponseEntity.status(201).location(uriComponent.toUri()).build();
+            return ResponseEntity.status(HttpStatus.CREATED).location(uriComponent.toUri()).build();
 
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException
                 | BadPaddingException | InvalidAlgorithmParameterException | NoSuchPaddingException e) {
@@ -46,13 +47,12 @@ public class SecretController {
 
     @GetMapping(value = "/{secretId}", produces = "application/json")
     public ResponseEntity<Secret> get(@PathVariable("secretId") String secretId,
-            @RequestParam("decrypt") Boolean decrypt, UriComponentsBuilder uriComponentsBuilder, Principal loggedUser) {
+            @RequestParam("decrypt") Boolean decrypt, Principal loggedUser) {
+
         try {
-            Secret secret = secretService.get(loggedUser.getName(), secretId, decrypt);
+            Secret secret = secretService.get(secretId, loggedUser.getName(), decrypt);
 
-            UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(secret);
-
-            return ResponseEntity.status(200).location(uriComponent.toUri()).body(secret);
+            return ResponseEntity.status(HttpStatus.OK).body(secret);
 
         } catch (ForbiddenAccess forbiddenAccess) {
             return ResponseEntity.status(401).build();
@@ -61,19 +61,20 @@ public class SecretController {
         } catch (BadPaddingException | InvalidAlgorithmParameterException | InvalidKeySpecException
                 | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException
                 | NoSuchAlgorithmException e) {
-            e.printStackTrace();
             return ResponseEntity.status(503).build();
         }
     }
 
-    @GetMapping(value = "/getAllEncryptedUsersSecretList")
-    public ResponseEntity<List<Secret>> getAllSecrets(UriComponentsBuilder uriComponentsBuilder, Principal loggedUser) {
+    @GetMapping
+    public ResponseEntity<List<Secret>> getAllSecrets(Principal loggedUser) {
         try {
             List<Secret> allSecretsOfUser = secretService.getAllEncryptedUsersSecretList(loggedUser.getName());
 
-            UriComponents uriComponent = uriComponentsBuilder.buildAndExpand(allSecretsOfUser);
+            if (allSecretsOfUser.size() == 0) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
 
-            return ResponseEntity.status(200).location(uriComponent.toUri()).body(allSecretsOfUser);
+            return ResponseEntity.status(HttpStatus.OK).body(allSecretsOfUser);
 
         } catch (Exception e) {
             return ResponseEntity.status(503).build();

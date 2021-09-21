@@ -52,8 +52,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{userId}", produces = "application/json")
-    public ResponseEntity<User> get(@PathVariable String userId, UriComponentsBuilder uriComponentsBuilder,
-            Principal loggedUser) {
+    public ResponseEntity<User> get(@PathVariable String userId, Principal loggedUser) {
 
         if (!loggedUser.getName().equals(userId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -107,17 +106,3 @@ public class UserController {
     }
 
 }
-
-// @PostMapping(value = "/login")
-// public ResponseEntity<Void> login(@RequestBody User user) {
-// try {
-// userService.login(user.getId(), user.getPassword());
-// return ResponseEntity.status(200).build();
-// } catch (DoesntExist doesntExist) {
-// return ResponseEntity.status(404).build();
-// } catch (ServerError serverError) {
-// return ResponseEntity.status(503).build();
-// } catch (AuthenticationException e) {
-// return ResponseEntity.status(401).build();
-// }
-// }

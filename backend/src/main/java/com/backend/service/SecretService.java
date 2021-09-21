@@ -143,12 +143,6 @@ public class SecretService {
     public String decryptContent(String content, String algorithm, String secretPassword, String salt,
             IvParameterSpec iv) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException,
             InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException {
-        System.out.println(content);
-        System.out.println(algorithm);
-        System.out.println(secretPassword);
-        System.out.println(salt);
-        System.out.println(generateKeyFromPassword(secretPassword, salt));
-        System.out.println(iv);
 
         return decrypt(algorithm, content, generateKeyFromPassword(secretPassword, salt), iv);
     }

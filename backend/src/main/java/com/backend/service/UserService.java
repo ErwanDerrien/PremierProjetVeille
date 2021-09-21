@@ -32,20 +32,6 @@ public class UserService {
         return existingUser;
     }
 
-    public String preparePassword(String userId, String password) throws InvalidPassword {
-        // Check password quality
-        if (password == null) {
-            throw new InvalidPassword("Quality checks not met! Cannot be null...");
-        }
-        if (password.length() < 8) {
-            throw new InvalidPassword("Quality checks not met! Cannot be so short...");
-        }
-
-        // TODO: Ajouter des criteres de complexite de mot de passe
-
-        return new BCryptPasswordEncoder().encode(userId + salt + password);
-    }
-
     public String create(final User user) throws MissingParameter, AlreadyExists, InvalidPassword {
         // TODO : Verification de la validite de l'adresse courriel
         // TODO : Setup la vérification avec l'api de pwned –Nice to have–
@@ -65,7 +51,7 @@ public class UserService {
         }
 
         // Hash the password with the id
-        user.setPassword(preparePassword(user.getId(), user.getPassword()));
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
 
         userRepository.save(user);
 
@@ -79,7 +65,7 @@ public class UserService {
             throw new DoesntExist("User does not exist");
         }
 
-        existingUser.setPassword(preparePassword(userId, password));
+        existingUser.setPassword(new BCryptPasswordEncoder().encode(password));
         userRepository.save(existingUser);
     }
 

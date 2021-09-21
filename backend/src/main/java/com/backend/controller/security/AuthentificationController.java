@@ -3,7 +3,6 @@ package com.backend.controller.security;
 import com.backend.controller.security.util.JwtTokenUtil;
 import com.backend.model.User;
 import com.backend.service.UserPrincipalService;
-import com.backend.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin
-// @RequestMapping("/api/v1/authenticate")
 public class AuthentificationController {
 
     @Autowired
@@ -33,15 +31,12 @@ public class AuthentificationController {
     @Autowired
     private UserPrincipalService userPrincipalService;
 
-    @Autowired
-    private UserService userService;
-
-    @PostMapping("/api/v1/authenticate/login")
+    @PostMapping("/api/v1/login")
     public ResponseEntity<String> createAuthentificationToken(@RequestBody User user) throws Exception {
 
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getId(),
-                    userService.preparePassword(user.getId(), user.getPassword())));
+            authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword()));
         } catch (DisabledException | BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -49,8 +44,6 @@ public class AuthentificationController {
         final UserDetails userDetails = userPrincipalService.loadUserByUsername(user.getId());
 
         final String token = tokenUtil.generateToken(userDetails);
-
-        System.out.println(token);
 
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.TEXT_PLAIN).body(token);
 

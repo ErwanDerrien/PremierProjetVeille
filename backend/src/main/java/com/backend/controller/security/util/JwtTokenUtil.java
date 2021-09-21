@@ -93,7 +93,7 @@ public class JwtTokenUtil implements Serializable {
     // generate a URL-safe and compact JWT token
     private String doGenerateToken(Map<String, Object> claims, String subject) {
 
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuer("https://secretstore.derrien.edu/")
+        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuer("https://backend.com/")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + validityInSeconds * 1000))
                 .signWith(getSecretKey(), SignatureAlgorithm.HS512).compact();

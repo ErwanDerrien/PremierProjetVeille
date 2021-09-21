@@ -40,17 +40,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
 		});
 
-		// Authorize some requests
 		http.authorizeRequests()
-				// Homepage is freely available
-				.antMatchers("/", "/home", "/index.html").permitAll()
-				// Static resources are freely available
-				.antMatchers(HttpMethod.GET, "/js/**", "/css/**", "/img/**", "/favicon.ico").permitAll()
-				// Sign-in and sign-up endpoints are freely available
-				.antMatchers(HttpMethod.GET, "/api/v1/activate").permitAll()
-				.antMatchers(HttpMethod.POST, "/api/v1/user", "/api/v1/authenticate", "/api/v1/resetpsw").permitAll()
-				// Options request for CORS are freely available
-				.antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+				// Authorize some requests
+				.antMatchers(HttpMethod.POST, "/api/v1/user", "/api/v1/login", "/api/v1/resetpsw").permitAll()
 				// Reject all other requests
 				.anyRequest().authenticated();
 
