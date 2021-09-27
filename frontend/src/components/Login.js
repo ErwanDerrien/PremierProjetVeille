@@ -22,7 +22,6 @@ const Login = ({userInformations, setUserInformations}) => {
             headers: {
                 'content-type': 'application/json',
             },
-            // credentials: 'include',
         });
 
         console.log('status :', response);
@@ -33,13 +32,16 @@ const Login = ({userInformations, setUserInformations}) => {
             return;
         }
 
-        
+        const decodedJWT = jwt_decode(response.data);
+        setUserInformations({
+          email: email,
+          role: decodedJWT.role,
+          loggedIn: true,
+        });
+
         const token = await response.text();
         console.log('token :', token);
         sessionStorage.setItem('JWT', 'Bearer ' + token);
-        
-        this.successMessage = 'Successful authentication ;)';
-
     }
 
     const deleteLocalUserInfo = () => {
@@ -53,11 +55,15 @@ const Login = ({userInformations, setUserInformations}) => {
  
     if(!userInformations.loggedIn) { 
         return (
+            <div>
+            <p>{errorMessage}</p>
             <form className="form" onSubmit={logUserIn}>
                 <label>Adresse courriel:</label><input id="email" name="email" type="email" required />
                 <label>Mot de passe:</label><input id="password" name="password" type="password" required minLength="8" />
                 <button type="submit">Sign Up</button>
-            </form> );
+            </form> 
+            </div>
+        );    
     } else {
         return (
             <div>

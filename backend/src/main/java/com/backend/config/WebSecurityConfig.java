@@ -44,7 +44,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				// Authorize some requests
 				.antMatchers(HttpMethod.POST, "/api/v1/user", "/api/v1/login", "/api/v1/resetpsw").permitAll()
 				// Options request for CORS are freely available
-				.antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+				.antMatchers(HttpMethod.OPTIONS, "/api/v1/**").permitAll()
 				// Reject all other requests
 				.anyRequest().authenticated();
 
@@ -85,7 +85,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.addAllowedOrigin("*");
+		config.addAllowedOriginPattern("*");
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);

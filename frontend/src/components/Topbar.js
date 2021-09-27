@@ -2,6 +2,7 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 
 const Topbar = () => {    
+  // {redirectHome, redirectLogin, redirectSignup}
   let history = useHistory();
   
   const redirectHome = () => {
