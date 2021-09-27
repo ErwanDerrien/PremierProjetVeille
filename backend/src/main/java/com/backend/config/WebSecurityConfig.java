@@ -43,6 +43,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()
 				// Authorize some requests
 				.antMatchers(HttpMethod.POST, "/api/v1/user", "/api/v1/login", "/api/v1/resetpsw").permitAll()
+				// Options request for CORS are freely available
+				.antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
 				// Reject all other requests
 				.anyRequest().authenticated();
 

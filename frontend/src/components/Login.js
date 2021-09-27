@@ -18,20 +18,24 @@ const Login = ({userInformations, setUserInformations}) => {
     
         const response = await fetch('http://localhost:8080/api/v1/login', {
             method: 'POST',
-            body: JSON.stringify({ email: email, password: password }),
+            body: JSON.stringify({ id: email, password: password }),
             headers: {
                 'content-type': 'application/json',
-            }
+            },
+            // credentials: 'include',
         });
 
+        console.log('status :', response);
+
         if (response.status !== 200) {
-            errorMessage = 'Informations ne correspondent à aucun utilisateur sauvegardé';
+            let errorMessage = "Votre connexion a échoué. L’identifiant ou le mot de passe que vous avez entré n’est pas valide. Réessayez.";
+            setErrorMessage(errorMessage);
             return;
         }
 
         
         const token = await response.text();
-        console.log('tooken :', token);
+        console.log('token :', token);
         sessionStorage.setItem('JWT', 'Bearer ' + token);
         
         this.successMessage = 'Successful authentication ;)';
