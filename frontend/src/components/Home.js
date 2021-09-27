@@ -1,21 +1,19 @@
-import { Typography } from "@mui/material";
 import React from "react";
 
 const Home = () => {
-  const [open, setOpen] = React.useState(true);
 
   return (
-    <>
-      <Typography
-        variant="h1"
-        component="h1"
-        sx={{
-          clear: "right",
-        }}
-      >
-        Home
-      </Typography>
-    </>
+    <div>
+      <h1>Bienvenu au gestionnaire de secrets</h1>
+      <p>Pour accéder à vos secrets, veuillez d'abord vous connecter</p>
+      <br></br>
+      <h2>Quoi de neuf depuis la dernière mise à jour ?</h2>
+      <ul>
+        <li>Tout!</li>
+        <li>Vous pouvez maintenant vous connecter pour accéder à vos secrets</li>
+        <li>Sécurité assurée pour une experience discrète et confidentielle</li>
+      </ul>
+    </div>
   );
 };
 

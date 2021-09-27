@@ -43,7 +43,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             username = tokenUtil.getUsernameFromToken(jwtToken);
 
             // In this if condition, we verify that there's not already an user saved in the
-            // context, which in our case is not possible as our application is statelesss
+            // context, which in our case is not possible as our application is stateless
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userPrincipalService.loadUserByUsername(username);
 
