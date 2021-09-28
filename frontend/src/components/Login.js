@@ -3,7 +3,7 @@ import {useState} from 'react'
 import jwt_decode from "jwt-decode";
 
 
-const Login = ({userInformations, setUserInformations}) => {
+const Login = ({userInformations, setUserInformations, setLoginLabel}) => {
     const [errorMessage, setErrorMessage] = useState()
 
     const logUserIn = async (evt) => {
@@ -24,31 +24,26 @@ const Login = ({userInformations, setUserInformations}) => {
             },
         });
 
-        console.log('status :', response);
-
         if (response.status !== 200) {
             let errorMessage = "Votre connexion a échoué. L’identifiant ou le mot de passe que vous avez entré n’est pas valide. Réessayez.";
             setErrorMessage(errorMessage);
             return;
         }
 
-        const decodedJWT = jwt_decode(response.data);
-        setUserInformations({
-          email: email,
-          role: decodedJWT.role,
-          loggedIn: true,
-        });
-
         const token = await response.text();
         console.log('token :', token);
         sessionStorage.setItem('JWT', 'Bearer ' + token);
+        
+        setUserInformations({
+          email: email,
+          loggedIn: true,
+        });
     }
 
     const deleteLocalUserInfo = () => {
         sessionStorage.setItem('jwt', '');
         setUserInformations({
-            email: "test",
-            role: "",
+            email: '',
             loggedIn: false
         });
     }
@@ -60,18 +55,15 @@ const Login = ({userInformations, setUserInformations}) => {
             <form className="form" onSubmit={logUserIn}>
                 <label>Adresse courriel:</label><input id="email" name="email" type="email" required />
                 <label>Mot de passe:</label><input id="password" name="password" type="password" required minLength="8" />
-                <button type="submit">Sign Up</button>
+                <button type="submit">Connexion</button>
             </form> 
             </div>
         );    
     } else {
         return (
             <div>
-                {/* <Grid container spacing={10} direction="column" alignItems="center" justifyContent="center" style={{minHeight: '100vh'}}>
-                    <Typography variant="h4" align="center">Connexion</Typography>
-                    <DialogContentText>On dirait que vous êtes déjà connecté, voulez-vous vous déconnecter ?</DialogContentText>
-                    <Button variant="contained" color="primary" onClick={deleteLocalUserInfo} style={{marginTop: '5vh'}}>Se Déconnecter</Button>
-                </Grid> */}
+                <p>On dirait que vous êtes déja connecté, voulez-vous vous déconnecter ?</p>
+                <button onClick={deleteLocalUserInfo}>Déconnexion</button>
             </div>
         )
     }

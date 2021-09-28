@@ -11,8 +11,7 @@ import { useHistory } from "react-router-dom";
 
 function App() {
   const userInformationsObject = {
-    email: "",
-    role: "",
+    email: '',
     loggedIn: false
   }
 
@@ -20,24 +19,12 @@ function App() {
     userInformationsObject
   )
 
-  let history = useHistory();
-
-  const redirectHome = () => {
-    // history.push('/home');
-  }
-
-  const redirectLogin = () => {
-      // history.push('/login');
-  }
+  const [loginLabel, setLoginLabel] = useState('Connexion');
   
-  const redirectSignup = () => {
-      // history.push('/signup');
-  }
-
   return (
     <Router>
       <div className="App"> 
-        <Topbar redirectHome={redirectHome} redirectLogin={redirectLogin} redirectSignup={redirectSignup}></Topbar>
+        <Topbar userInformations={userInformations} setUserInformations={setUserInformations}></Topbar>
         <Switch>
           <Route path="/" exact component={Home}/>
           <Route path="/home" exact component={Home}/>
@@ -46,12 +33,16 @@ function App() {
             extact 
             component={() => <Login userInformations={userInformations} setUserInformations={setUserInformations} />}
           />
-          <Route path='/signup' exact component={Signup}/>
+          <Route 
+            path="/signup" 
+            extact 
+            component={() => <Signup userInformations={userInformations} setUserInformations={setUserInformations} />}
+          />
           <Route path='/dashboard' exact component={Dashboard}/>
           <Route 
             path="/dashboard" 
             extact 
-            component={() => <Login userInformations={userInformations} setUserInformations={setUserInformations} />}
+            component={() => <Login userInformations={userInformations} setUserInformations={setUserInformations} setLoginLabel={setLoginLabel}/>}
           />
         </Switch>
         { userInformations.loggedIn ? (<Redirect push to="/dashboard"/>) : null }

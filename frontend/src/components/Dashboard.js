@@ -2,9 +2,10 @@ import React from "react";
 
 const Dashboard = ({userInformations, setUserInformations}) => {
 
-  return (
+    return (
     <div>
-      <h1>Bienvenu au au dashboard</h1>
+      <h1>Bienvenue au dashboard</h1>
+      <h2>Vos secrets</h2>
     </div>
   );
 };

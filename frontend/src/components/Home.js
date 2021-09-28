@@ -4,7 +4,7 @@ const Home = () => {
 
   return (
     <div>
-      <h1>Bienvenu au gestionnaire de secrets</h1>
+      <h1>Bienvenue au gestionnaire de secrets</h1>
       <p>Pour accéder à vos secrets, veuillez d'abord vous connecter</p>
       <br></br>
       <h2>Quoi de neuf depuis la dernière mise à jour ?</h2>
