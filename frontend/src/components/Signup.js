@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 
-const Signup = ({userInformations, setUserInformations, setLoginLabel}) => {
+const Signup = ({userInformations, setUserInformations}) => {
     const [errorMessage, setErrorMessage] = useState()
 
     const logUserIn = async (evt) => {

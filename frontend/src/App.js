@@ -17,10 +17,8 @@ function App() {
 
   const [userInformations, setUserInformations] = useState(    
     userInformationsObject
-  )
+  );
 
-  const [loginLabel, setLoginLabel] = useState('Connexion');
-  
   return (
     <Router>
       <div className="App"> 
@@ -38,11 +36,10 @@ function App() {
             extact 
             component={() => <Signup userInformations={userInformations} setUserInformations={setUserInformations} />}
           />
-          <Route path='/dashboard' exact component={Dashboard}/>
           <Route 
             path="/dashboard" 
             extact 
-            component={() => <Login userInformations={userInformations} setUserInformations={setUserInformations} setLoginLabel={setLoginLabel}/>}
+            component={() => <Dashboard userInformations={userInformations} setUserInformations={setUserInformations} />}
           />
         </Switch>
         { userInformations.loggedIn ? (<Redirect push to="/dashboard"/>) : null }

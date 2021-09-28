@@ -1,9 +1,8 @@
 import React from 'react';
 import {useState} from 'react'
-import jwt_decode from "jwt-decode";
 
 
-const Login = ({userInformations, setUserInformations, setLoginLabel}) => {
+const Login = ({userInformations, setUserInformations}) => {
     const [errorMessage, setErrorMessage] = useState()
 
     const logUserIn = async (evt) => {
@@ -31,7 +30,6 @@ const Login = ({userInformations, setUserInformations, setLoginLabel}) => {
         }
 
         const token = await response.text();
-        console.log('token :', token);
         sessionStorage.setItem('JWT', 'Bearer ' + token);
         
         setUserInformations({
