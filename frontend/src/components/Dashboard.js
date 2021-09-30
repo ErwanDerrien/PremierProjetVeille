@@ -1,15 +1,15 @@
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
+import SecretsView from "./SecretsView";
 
 const Dashboard = ({userInformations, setUserInformations}) => {
 
     
     const [errorMessage, setErrorMessage] = useState();
     
-    const [listItems, setListItems] = useState({secrets: []});
+    const [listSecrets, setListSecrets] = useState([]);
 
-    let secretList;
 
     const getUserInfo = async () => {
         
@@ -20,10 +20,6 @@ const Dashboard = ({userInformations, setUserInformations}) => {
             },
             
         })
-        .then(response => response.json())
-        .then(data => {
-            setListItems({secrets: data});
-        });
         
         if (response.status !== 200) {
             let errorMessage = "Votre connexion a échoué. L’identifiant ou le mot de passe que vous avez entré n’est pas valide. Réessayez.";
@@ -31,9 +27,8 @@ const Dashboard = ({userInformations, setUserInformations}) => {
             return;
         }
         
-        const responseJson = await response.json()
-
-        console.log(responseJson)
+        const secrets = await response.json()
+        setListSecrets(secrets);
 
     }
 
@@ -48,7 +43,9 @@ const Dashboard = ({userInformations, setUserInformations}) => {
         );
     }
     
-    getUserInfo();
+    if (listSecrets.length == 0) {
+        getUserInfo();
+    }
 
     
     return (
@@ -56,9 +53,7 @@ const Dashboard = ({userInformations, setUserInformations}) => {
         <h1>Bienvenue au dashboard</h1>
         <p>{errorMessage}</p>
         <h2>Vos secrets</h2>
-        <ul>
-          {listItems}
-        </ul>
+        <SecretsView secrets={listSecrets}></SecretsView>
         </div>
     );
 };

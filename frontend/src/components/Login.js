@@ -51,8 +51,8 @@ const Login = ({userInformations, setUserInformations}) => {
             <div>
             <p>{errorMessage}</p>
             <form className="form" onSubmit={logUserIn}>
-                <label>Adresse courriel:</label><input id="email" name="email" type="email" required />
-                <label>Mot de passe:</label><input id="password" name="password" type="password" required minLength="8" />
+                <label>Adresse courriel:</label><input id="email" name="email" type="email" required defaultValue="test@gmail.com"/>
+                <label>Mot de passe:</label><input id="password" name="password" type="password" required minLength="8" defaultValue="test12345"/>
                 <button type="submit">Connexion</button>
             </form> 
             </div>
