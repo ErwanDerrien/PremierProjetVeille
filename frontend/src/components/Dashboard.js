@@ -1,10 +1,16 @@
 import React from "react";
 import { useState } from "react";
+import { useEffect } from "react";
 
 const Dashboard = ({userInformations, setUserInformations}) => {
 
+    
     const [errorMessage, setErrorMessage] = useState();
     
+    const [listItems, setListItems] = useState({secrets: []});
+
+    let secretList;
+
     const getUserInfo = async () => {
         
         const response = await fetch(`http://localhost:8080/api/v1/secret/`, {
@@ -13,6 +19,10 @@ const Dashboard = ({userInformations, setUserInformations}) => {
                 'authorization': sessionStorage.getItem('JWT'),
             },
             
+        })
+        .then(response => response.json())
+        .then(data => {
+            setListItems({secrets: data});
         });
         
         if (response.status !== 200) {
@@ -20,20 +30,37 @@ const Dashboard = ({userInformations, setUserInformations}) => {
             setErrorMessage(errorMessage);
             return;
         }
-
+        
         const responseJson = await response.json()
-        console.log(responseJson);
+
+        console.log(responseJson)
+
     }
 
+    
+    
+    if (!userInformations.loggedIn) {
+        return (
+            <div>
+                <h1>Bienvenue au dashboard</h1>
+                <h2>Vous n'êtes pas connecté</h2>
+            </div>
+        );
+    }
+    
     getUserInfo();
 
+    
     return (
-    <div>
-      <h1>Bienvenue au dashboard</h1>
-      <p>{errorMessage}</p>
-      <h2>Vos secrets</h2>
-    </div>
-  );
+        <div>
+        <h1>Bienvenue au dashboard</h1>
+        <p>{errorMessage}</p>
+        <h2>Vos secrets</h2>
+        <ul>
+          {listItems}
+        </ul>
+        </div>
+    );
 };
 
 export default Dashboard;

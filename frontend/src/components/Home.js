@@ -1,6 +1,15 @@
 import React from "react";
 
-const Home = () => {
+const Home = ({userInformations, setUserInformations}) => {
+
+  if (userInformations.loggedIn) {
+    return (
+      <div>
+        <h1>Bienvenue au gestionnaire de secrets</h1>
+        <p>Pour accéder à vos secrets, dirigez-vous vers votre dashboard</p>
+      </div>
+    );
+  }
 
   return (
     <div>

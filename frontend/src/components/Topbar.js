@@ -7,7 +7,7 @@ const Topbar = ({userInformations, setUserInformations}) => {
   let history = useHistory();
 
   const redirectHome = () => {
-    history.push('/home');
+    history.push('/');
   }
 
   const redirectLogin = () => {
