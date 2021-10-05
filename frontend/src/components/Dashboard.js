@@ -1,9 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { useEffect } from "react";
 import SecretsView from "./SecretsView";
 
-const Dashboard = ({userInformations, setUserInformations}) => {
+const Dashboard = ({userInformations, setUserInformations, setSecretId}) => {
 
     
     const [errorMessage, setErrorMessage] = useState();
@@ -21,8 +20,14 @@ const Dashboard = ({userInformations, setUserInformations}) => {
             
         })
         
+        if (response.status === 204) {
+            let errorMessage = "Vous n'avez aucun secrets sauvegardés";
+            setErrorMessage(errorMessage);
+            return;
+        }
+
         if (response.status !== 200) {
-            let errorMessage = "Votre connexion a échoué. L’identifiant ou le mot de passe que vous avez entré n’est pas valide. Réessayez.";
+            let errorMessage = "Erreur innatendue côté serveur";
             setErrorMessage(errorMessage);
             return;
         }
@@ -53,7 +58,7 @@ const Dashboard = ({userInformations, setUserInformations}) => {
         <h1>Bienvenue au dashboard</h1>
         <p>{errorMessage}</p>
         <h2>Vos secrets</h2>
-        <SecretsView secrets={listSecrets}></SecretsView>
+        <SecretsView userInformations={userInformations} setListSecrets={setListSecrets} secrets={listSecrets} setSecretId={setSecretId}></SecretsView>
         </div>
     );
 };

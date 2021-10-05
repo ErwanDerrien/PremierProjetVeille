@@ -6,7 +6,7 @@ import {useState} from 'react'
 import Topbar from './components/Topbar';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
-
+import SecretInfo from './components/SecretInfo';
 
 
 function App() {
@@ -18,6 +18,8 @@ function App() {
   const [userInformations, setUserInformations] = useState(    
     userInformationsObject
   );
+
+  const [secretId, setSecretId] = useState()
 
   return (
     <Router>
@@ -42,7 +44,12 @@ function App() {
           <Route 
             path="/dashboard" 
             exact 
-            component={() => <Dashboard userInformations={userInformations} setUserInformations={setUserInformations} />}
+            component={() => <Dashboard userInformations={userInformations} setUserInformations={setUserInformations} setSecretId={setSecretId}/>}
+          />
+          <Route 
+            path="/secret" 
+            exact 
+            component={() => <SecretInfo userInformations={userInformations} setUserInformations={setUserInformations} secretId={secretId}/>}
           />
         </Switch>
         { userInformations.loggedIn ? (<Redirect push to="/dashboard"/>) : null }

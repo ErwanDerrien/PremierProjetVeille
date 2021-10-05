@@ -3,10 +3,10 @@ import {useState} from 'react'
 import { useHistory } from "react-router-dom";
 import SecretView from "./SecretView";
 
-const SecretsView = ({secrets}) => {    
+const SecretsView = ({userInformations, setListSecrets, secrets, setSecretId}) => {    
  
     const secretItems = secrets.map((secret) =>
-        <SecretView secret={secret} />
+        <SecretView userInformations={userInformations} setListSecrets={setListSecrets} secret={secret} setSecretId={setSecretId}/>
     );
 
     return (
