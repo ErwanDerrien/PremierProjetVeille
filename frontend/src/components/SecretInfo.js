@@ -1,6 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import { useEffect } from "react";
 
 const SecretInfo = ({userInformations, setUserInformations, secretId}) => {
 
@@ -57,8 +56,8 @@ const SecretInfo = ({userInformations, setUserInformations, secretId}) => {
 
     return (
         <div>
-            <h1>Bienvenue aux informations du secret : {secret.name}</h1>
-            <p>{secret.content}</p>
+            <h1>Nom du secret : {secret.name}</h1>
+            <h2>Contenu du secret : {secret.content}</h2>
         </div>
     );
 };

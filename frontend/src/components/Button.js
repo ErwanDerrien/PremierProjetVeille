@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 
 const Button = ({userInformations, setListSecrets, itemToDelete, purposeValue, setSecretId}) => {    
 
-    const [purpose, setPurpose] = useState(purposeValue)
+    const [purpose] = useState(purposeValue)
 
     const deleteItem = async () => {
         
@@ -59,13 +59,13 @@ const Button = ({userInformations, setListSecrets, itemToDelete, purposeValue, s
         history.push('/secret');
     }
 
-    if (purpose == 'delete') {
+    if (purpose === 'delete') {
         return (
             <button onClick={deleteItem}>Supprimer</button>
         );
     }
 
-    if (purpose == 'info') {
+    if (purpose === 'info') {
         return (
             <button onClick={redirectInfo}>Plus d'info</button>
         );

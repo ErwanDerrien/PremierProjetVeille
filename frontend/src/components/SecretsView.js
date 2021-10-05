@@ -1,6 +1,4 @@
 import React from "react";
-import {useState} from 'react'
-import { useHistory } from "react-router-dom";
 import SecretView from "./SecretView";
 
 const SecretsView = ({userInformations, setListSecrets, secrets, setSecretId}) => {    

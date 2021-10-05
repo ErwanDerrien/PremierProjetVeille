@@ -48,7 +48,7 @@ const Dashboard = ({userInformations, setUserInformations, setSecretId}) => {
         );
     }
     
-    if (listSecrets.length == 0) {
+    if (listSecrets.length === 0) {
         getUserInfo();
     }
 
